@@ -697,25 +697,6 @@ describe('FBP Graph', () => {
           originalGraph = g.toJSON();
           g.save(graphPath, done);
         });
-        it('should be possible to load a graph from a file', () => lib.graph.loadFile(graphPath)
-          .then((g) => {
-            chai.expect(g).to.be.an('object');
-            chai.expect(g.toJSON()).to.eql(originalGraph);
-          }));
-        it('should be possible to load a graph from a file with a callback', (done) => {
-          lib.graph.loadFile(graphPath, (err, g) => {
-            if (err) {
-              done(err);
-              return;
-            }
-            if (!g) {
-              done(new Error('No graph'));
-              return;
-            }
-            chai.expect(g.toJSON()).to.eql(originalGraph);
-            done();
-          });
-        });
       });
       describe('without .json suffix', () => {
         let graphPathLegacy;
@@ -745,20 +726,6 @@ describe('FBP Graph', () => {
           g.addNode('Foo', 'Bar');
           originalGraph = g.toJSON();
           g.save(graphPathLegacy, done);
-        });
-        it('should be possible to load a graph from a file', (done) => {
-          lib.graph.loadFile(graphPathLegacySuffix, (err, g) => {
-            if (err) {
-              done(err);
-              return;
-            }
-            if (!g) {
-              done(new Error('No graph'));
-              return;
-            }
-            chai.expect(g.toJSON()).to.eql(originalGraph);
-            done();
-          });
         });
       });
     });

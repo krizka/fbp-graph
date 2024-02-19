@@ -1179,79 +1179,6 @@ function loadJSON(passedDefinition: string | GraphJson, callback?: GraphLoadingC
   return promise;
 }
 
-function loadFBP(fbpData: string): Promise<Graph>;
-function loadFBP(fbpData: string, callback: GraphLoadingCallback, metadata?: JournalMetadata): void;
-function loadFBP(fbpData: string, callback?: GraphLoadingCallback, metadata: JournalMetadata = {}, caseSensitive = false): void|Promise<Graph> {
-  const promise = new Promise<GraphJson>((resolve) => {
-    // eslint-disable-next-line global-require
-    resolve(require('fbp').parse(fbpData, { caseSensitive }));
-  })
-   .then((def) => loadJSON(def));
-  if (callback) {
-    promise.then((graph) => {
-      callback(null, graph);
-    }, callback);
-  }
-  return promise;
-}
-
-function loadHTTP(url: string): Promise<string>
-function loadHTTP(url: string, callback: StringLoadingCallback): void;
-function loadHTTP(url: string, callback?: StringLoadingCallback): void|Promise<string> {
-  const promise = new Promise<string>((resolve, reject) => {
-    const req = new XMLHttpRequest();
-    req.onreadystatechange = () => {
-      if (req.readyState !== 4) { return; }
-      if (req.status !== 200) {
-        reject(new Error(`Failed to load ${url}: HTTP ${req.status}`));
-        return;
-      }
-      resolve(req.responseText);
-    };
-    req.open('GET', url, true);
-    req.send();
-  });
-  if (callback) {
-    promise.then((content) => {
-      callback(null, content);
-    }, callback);
-  }
-  return promise;
-}
-
-function loadFile(file: string): Promise<Graph>;
-function loadFile(file: string, callback: GraphLoadingCallback, metadata?: JournalMetadata, caseSensitive?: boolean): void;
-function loadFile(file: string, callback?: GraphLoadingCallback, metadata: JournalMetadata = {}, caseSensitive = false) {
-  let ioPromise: Promise<string>;
-  if (isBrowser()) {
-    // On browser we can try getting the file via AJAX
-    ioPromise = loadHTTP(file);
-  } else {
-    ioPromise = new Promise((resolve, reject) => {
-      // Node.js graph file
-      readFile(file, 'utf-8', (err: null|Error, data: string) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(data);
-      });
-    });
-  }
-  const promise = ioPromise.then((content) => {
-    if (file.split('.').pop() === 'fbp') {
-      return loadFBP(content);
-    }
-    return loadJSON(content);
-  });
-  if (callback) {
-    promise.then((content) => {
-      callback(null, content);
-    }, callback);
-  }
-  return promise;
-}
-
 // remove everything in the graph
 function resetGraph(graph: Graph) {
   // Edges and similar first, to have control over the order
@@ -1326,8 +1253,6 @@ export {
   Graph,
   createGraph,
   loadJSON,
-  loadFBP,
-  loadFile,
   equivalent,
   mergeResolveTheirsNaive as mergeResolveTheirs,
 };
